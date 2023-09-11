@@ -1,0 +1,71 @@
+/*Triggers Ejercicio 1
+Que aseguren que al momento de introducir nombres y apellidos estos solo 
+contengan letras */
+
+ALTER TRIGGER trg_NombreLetras ON CLIENTE
+FOR INSERT , UPDATE
+AS
+	BEGIN
+		DECLARE @Nombre varchar(50)
+		DECLARE @ApellidoPaterno varchar(50)
+		DECLARE @ApellidoMaterno varchar(50)
+		DECLARE @CaracteresValidos varchar(100)
+		DECLARE @ConcatNombre varchar(200)
+		SET @Nombre = ISNULL((SELECT Nombre FROM inserted),'')
+		SET @ApellidoPaterno = ISNULL((SELECT ApellidoPaterno FROM inserted),'')
+		SET @ApellidoMaterno = ISNULL((SELECT ApellidoMaterno FROM inserted),'')
+		SET @ConcatNombre = @Nombre+@ApellidoPaterno+@ApellidoMaterno
+		SET @CaracteresValidos = 'abcdefghijklmnñopqrstuvwxyz'
+		IF(SELECT dbo.EsTextoValidoProfe(@ConcatNombre,@CaracteresValidos)) = 0
+			BEGIN
+				ROLLBACK
+				PRINT 'Nombre Incorrecto'
+			END
+	END
+
+/*Triggers Ejercicio 2
+Que aseguren que todas las fechas sean mayores a la de inicio de 
+operaciones de la tienda */
+ALTER TRIGGER Trg_FechasTienda ON CLIENTE
+FOR INSERT , UPDATE
+AS
+	BEGIN
+		DECLARE @FechaTienda date
+		DECLARE @FechaInsertar date
+		SET @FechaTienda = '19600114'
+		SET @FechaInsertar = (SELECT FechaAlta FROM inserted)
+		IF(@FechaInsertar <= @FechaTienda)
+			BEGIN
+				ROLLBACK
+				PRINT 'Fecha de Alta Invalida'
+			END
+	END
+
+/*Triggers Ejercicio 4
+Uno que cuando se elimine un registro en la tabla de clientes, en vez de 
+eliminarlo , que lo mande a otra tabla llamada tblClientesBorrados */
+ALTER TRIGGER trg_RegistroMod ON CLIENTE
+FOR DELETE
+AS
+	BEGIN
+		DECLARE @RegistroEliminadoID int
+		DECLARE @Fecha datetime
+		SET @Fecha = GETDATE()
+		SET @RegistroEliminadoID = (SELECT id_Cliente FROM deleted)
+		IF(@RegistroEliminadoID IS NOT NULL)
+			BEGIN
+				PRINT 'Alto Ahi Ladron'
+				ROLLBACK
+				INSERT INTO ClientesBorrados(id_Cliente, Nombre, ApellidoPaterno, ApellidoMaterno, Credito, Deuda, FechaBorrado)
+				 values (
+				 (SELECT id_Cliente FROM CLIENTE where id_cliente = @RegistroEliminadoID),
+				 (SELECT Nombre FROM CLIENTE where id_cliente = @RegistroEliminadoID),
+				 (SELECT ApellidoPaterno FROM CLIENTE where id_cliente = @RegistroEliminadoID),
+				 (SELECT ApellidoMaterno FROM CLIENTE where id_cliente = @RegistroEliminadoID),
+				 (SELECT Credito FROM CLIENTE where id_cliente =  @RegistroEliminadoID),
+				 (SELECT Deuda FROM CLIENTE where id_cliente = @RegistroEliminadoID),
+				 @Fecha
+				 )
+			END
+
+	END
