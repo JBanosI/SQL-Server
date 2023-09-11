@@ -1,0 +1,240 @@
+/*1. Una función que calcule los días hábiles transcurridos entre 2 fechas*/
+CREATE FUNCTION Dias_habiles(@fecha1 date, @fecha2 date)
+RETURNS numeric(18,0)
+AS
+	BEGIN
+		DECLARE @dias_habiles numeric(18,0)
+		SET @dias_habiles = (DATEDIFF(dd, @Fecha1, @fecha2) + 1)
+                      - (DATEDIFF(wk, @Fecha1, @fecha2) * 2)
+                      - (CASE WHEN DATEPART(dw, @fecha1) = 1 THEN 1 ELSE 0 END)
+                      - (CASE WHEN DATEPART(dw, @Fecha2) = 7 THEN 1 ELSE 0 END)
+		return @dias_habiles
+	END
+
+	SELECT dbo.Dias_habiles('20230902','20230916') DiasHabiles
+
+/*2. Para el cálculo de algunas promociones, se hace necesaria una función que 
+con base en una fecha regrese un bono de acuerdo a lo siguiente: 
+
+De 6 meses a 3 años -> 1000 
+De 3 a 5 años -> 2000 */
+CREATE FUNCTION Bono(@Fecha1 date)
+RETURNS varchar(50)
+AS
+	BEGIN
+		DECLARE @MESES numeric(18,0)
+		DECLARE @BONO varchar(50)
+		SET @MESES = DATEDIFF(MM,@Fecha1,GETDATE())
+		IF(@MESES >= 6 AND @MESES <= 36)
+			BEGIN
+				SET @BONO = '1000' 
+			END
+		ELSE
+			BEGIN
+				IF(@MESES >= 37 AND @MESES <= 60)
+				BEGIN
+					SET @BONO = '2000' 
+				END
+			END
+		IF(@MESES < 6 OR @MESES > 60)
+			BEGIN
+				SET @BONO = 'Sin bono'
+			END
+
+		RETURN @Bono
+	END
+
+	SELECT dbo.Bono('20230321')  Bono
+
+/*3. Una función que reciba un texto y lo regrese con los caracteres separados 
+por ‘_’ ( Edgar --> E_d_g_a_r) */
+CREATE FUNCTION Intercala(@Nombre varchar(50))
+RETURNS varchar(50)
+AS
+	BEGIN
+		DECLARE @TextoAux varchar(50)
+		SET @TextoAux = ''
+		DECLARE @PosAct int
+		SET @PosAct = 0
+		WHILE @PosAct<=LEN(@Nombre)
+			BEGIN
+				SET @TextoAux += SUBSTRING(@Nombre,@PosAct,1)+'_'
+				SET @PosAct += 1
+			END
+		RETURN @TextoAux
+	END
+
+SELECT dbo.Intercala('Jesus')
+
+/* 4.- Una que invierta cadenas (Edgar -> ragdE) */
+CREATE FUNCTION Invert(@Cadena varchar(50))
+RETURNS varchar(50)
+AS
+	BEGIN
+		DECLARE @TextoAux varchar(50)
+		SET @TextoAux = ''
+		DECLARE @PosAct int
+		SET @PosAct = LEN(@Cadena)
+		WHILE @PosAct>=0
+			BEGIN
+				SET @TextoAux += SUBSTRING(@Cadena,@PosAct,1)
+				SET @PosAct -= 1
+			END
+		RETURN @TextoAux
+	END
+
+	SELECT dbo.Invert('Edgar')
+
+/*5. Se desea una función que valide la fecha para que sea mayor a la actual*/
+CREATE FUNCTION FechaMayor(@Fecha date)
+RETURNS varchar(50)
+AS
+	BEGIN
+		DECLARE @Respuesta varchar(50)
+		SET @Respuesta = ''
+		IF(@Fecha > GETDATE())
+			BEGIN
+				SET @Respuesta = 'Fecha correcta'
+			END
+		ELSE
+			BEGIN
+				SET @Respuesta = 'Fecha incorrecta'
+			END
+	RETURN @Respuesta
+	END
+
+SELECT dbo.FechaMayor('20230903') Fecha
+
+/*6. Una función que valide cadenas de texto para que solo tenga caracteres de 
+la A a la Z*/
+CREATE FUNCTION AZ(@Cadena varchar(100))
+RETURNS varchar(100)
+AS
+	BEGIN
+		DECLARE @CadenaMayus varchar(100)
+		SET @CadenaMayus = UPPER(@Cadena)
+		DECLARE @PosAct int
+		SET @PosAct = 1
+		DECLARE @letra int
+		SET @letra = 65
+		DECLARE @Aux varchar(100)
+		SET @Aux = ''
+		DECLARE @RES varchar(100)
+		SET @RES = ''
+		WHILE(@PosAct <= LEN(@CadenaMayus))
+			BEGIN
+				SET @Aux = SUBSTRING(@CadenaMayus,@PosAct,1)
+				WHILE (@letra <= 91)
+					BEGIN
+						IF(@Aux = char(@letra) OR @Aux = 'Ñ')
+							BEGIN
+								SET @RES += @Aux
+								SET @letra = 65
+								BREAK;
+							END
+						ELSE
+							BEGIN
+								SET @letra+=1
+								IF(@letra = 91)
+									BEGIN
+										SET @RES = 'Contiene caracter especial'
+									END
+							END
+					END
+				SET @PosAct += 1
+			END
+	RETURN @RES
+	END
+
+SELECT ApellidoPaterno, dbo.AZ(CLIENTE.ApellidoPaterno) ResultadoCadena
+FROM CLIENTE
+
+
+--Versión Alternativa ---------------------------------------------------------------------------
+Create FUNCTION EsTextoValidoProfe(@TextoAValidar varchar(200),@CaracteresValidos varchar(150))
+RETURNS INT
+AS
+	BEGIN
+		DECLARE @PosTextoAValidar int
+		DECLARE @CaracterAValidarAct char(1)
+		DECLARE @CaracterValidoAct char(1)
+		DECLARE @PosCaracteres int
+		DECLARE @EsTextoValido int
+		DECLARE @EsCaracterValido int
+		SET @PosTextoAValidar = 1
+		SET @EsTextoValido = 1
+		WHILE(@PosTextoAValidar <= len(@TextoAValidar) AND @EsTextoValido = 1)
+			BEGIN
+				SET @CaracterAValidarAct = SUBSTRING(@TextoAValidar,@PosTextoAValidar,1)
+				SET @PosCaracteres = 1
+				WHILE(@PosCaracteres <= LEN(@CaracteresValidos))
+					BEGIN
+						SET @CaracterValidoAct = SUBSTRING(@CaracteresValidos,@PosCaracteres,1)
+						SET @EsCaracterValido = 0
+						IF(@CaracterAValidarAct = @CaracterValidoAct)
+							BEGIN
+								SET @EsCaracterValido = 1
+								SET @PosCaracteres = LEN(@CaracteresValidos)
+							END
+						SET @PosCaracteres += 1
+					END
+				IF(@EsCaracterValido = 0)
+					BEGIN
+						SET @EsTextoValido = 0
+					END
+				SET @PosTextoAValidar += 1
+			END
+		RETURN @EsTextoValido
+	END
+
+SELECT Nombre , dbo.EsTextoValidoProfe(Nombre, ' acdbefghijklmnñopqrstuvwxyz') Validacion
+FROM CLIENTE
+
+SELECT Telefono , dbo.EsTextoValido(Telefono, '1234567890') Validacion
+FROM CLIENTE
+
+
+
+/*7. Una función que valide el formato de correo electrónico para que tenga la 
+forma: 
+texto@texto.texto(long3).text*/
+create function CorreoValido(@Correo varchar(50))
+RETURNS int
+AS
+	BEGIN
+		DECLARE @Aux varchar(50)
+		SET @Aux = '' 
+		DECLARE @PosAct int
+		SET @PosAct = 1
+		DECLARE @AuxPos int
+		SET @AuxPos = 0
+		WHILE(@PosAct <= LEN(@Correo))
+			BEGIN
+				SET @Aux = SUBSTRING(@Correo,@PosAct,1)
+					IF(@Aux = '.')
+						BEGIN
+							WHILE(@AuxPos <= 3)
+								BEGIN
+									@Aux = SUBSTRING(@Correo,@PosAct,1)
+									SET @AuxPos += 1
+								END
+
+						END
+				SET @PosAct += 1
+			END
+	END
+	-----------------------------------------------------------------
+
+	/*8. Una función que calcule el total de una venta*/
+CREATE FUNCTION TotalVenta(@Venta int)
+RETURNS NUMERIC(18,4)
+AS
+	BEGIN
+		DECLARE @TOTAL numeric(18,4)
+		SET @TOTAL = (SELECT SUM(PRODUCTO_VENDIDO.PrecioVenta) FROM VENTA JOIN PRODUCTO_VENDIDO 
+						ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta AND VENTA.id_Venta = @Venta)
+		RETURN @TOTAL
+	END
+
+SELECT VENTA.id_Venta , dbo.TotalVenta(3) TotalVenta FROM VENTA JOIN PRODUCTO_VENDIDO ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta AND Venta.id_Venta  = 3
+GROUP BY VENTA.id_Venta
