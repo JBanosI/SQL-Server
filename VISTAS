@@ -1,0 +1,137 @@
+/*Ejercicio 1 
+*Muestra los proveedores que actualmente nos estan surtiendo productos, junto con sus productos
+*/
+CREATE VIEW ProductosProveedor
+AS
+SELECT PROVEEDOR.Nombre Proveedor , PRODUCTO.Nombre Producto
+FROM PROVEEDOR join PRODUCTO on PROVEEDOR.id_Proveedor = PRODUCTO.id_proveedor
+
+SELECT *FROM ProductosProveedor
+/*------------------------------------------------------*/
+
+/*Ejercicio 2
+*Muestra todos los proveedores y sus productos (si es que tienen), en caso 
+*de que no surtan productos actualmente, pon el texto 'sin producto asignado'
+*en el nombre del producto 
+*/
+CREATE VIEW ProductosNoAsignados
+AS
+SELECT PROVEEDOR.Nombre Proveedor , ISNULL(PRODUCTO.Nombre,'SIN PRODUCTO ASIGNADO') Producto
+FROM PROVEEDOR LEFT JOIN PRODUCTO ON PROVEEDOR.id_Proveedor = PRODUCTO.id_proveedor
+
+SELECT *FROM ProductosNoAsignados
+/*-----------------------------------------------------------------*/
+
+/*Ejercicio 3
+*Muestra todos los Productos y sus respectivos proveedores asignados (si es 
+*que tienen), si no lo surte nadie, pon el texto "sin proveedor asignado" 
+*/
+CREATE VIEW ProveedorNoAsignado
+AS
+SELECT ISNULL(PROVEEDOR.Nombre , 'SIN PROVEEDOR ASIGNADO') Proveedor , ISNULL(PRODUCTO.Nombre,'SIN PRODUCTO ASIGNADO') Producto
+FROM PROVEEDOR RIGHT JOIN PRODUCTO ON PROVEEDOR.id_Proveedor = PRODUCTO.id_proveedor
+
+SELECT *FROM ProveedorNoAsignado
+/*----------------------------------------------------------*/
+
+/*Ejercicio 4
+*Muestra un listado con todos los proveedores y todos los productos, 
+*mostrando que proveedor surte que producto, en caso de que no se haya 
+*asignado ya sea producto o proveedor por el texto ‘sin asignar’ 
+*/
+CREATE VIEW ProductosProveedoresNoAsignados
+AS
+SELECT ISNULL(PROVEEDOR.Nombre , 'SIN ASIGNAR') Proveedor , ISNULL(PRODUCTO.Nombre,'SIN ASIGNAR') Producto
+FROM PROVEEDOR FULL JOIN PRODUCTO ON PROVEEDOR.id_Proveedor = PRODUCTO.id_proveedor
+
+SELECT *FROM ProductosProveedoresNoAsignados
+/*--------------------------------------------------------------*/
+
+/*Ejercicio 5
+*Muestra solo los productos que no tienen proveedor asignado 
+*/
+CREATE VIEW ProductosSinProveedor
+AS
+SELECT PROVEEDOR.Nombre Proveedor , PRODUCTO.Nombre Producto
+FROM (PROVEEDOR RIGHT JOIN PRODUCTO ON PROVEEDOR.id_Proveedor = PRODUCTO.id_proveedor)
+WHERE PROVEEDOR.Nombre IS NULL 
+
+SELECT *FROM ProductosSinProveedor
+/*---------------------------------------------------------------*/
+
+/*Ejercicio 6
+*Muestra los nombres de los productos vendidos 
+*/
+CREATE VIEW ProductosVendidos
+AS
+SELECT PRODUCTO.Nombre
+FROM PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO_VENDIDO.id_producto = PRODUCTO.id_Producto 
+GROUP BY PRODUCTO.Nombre
+
+SELECT *FROM ProductosVendidos
+/*--------------------------------------------------*/
+
+/*Ejercicio 7
+*Muestra los clientes que han comprado algo y en que venta fue
+*/
+CREATE VIEW ClienteVenta
+AS
+SELECT CLIENTE.Nombre Nombre_Cliente, VENTA.id_Venta Venta
+FROM CLIENTE JOIN VENTA ON CLIENTE.id_Cliente = VENTA.id_cliente
+
+SELECT *FROM ClienteVenta
+/*-------------------------------------------------*/
+
+/*Ejercicio 8
+*Muestra los nombres de los productos vendidos y en que fecha fue
+*/
+CREATE VIEW VentaFecha
+AS
+SELECT VENTA.FechaHora , PRODUCTO.Nombre
+FROM (VENTA JOIN PRODUCTO_VENDIDO ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta)
+JOIN PRODUCTO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto
+
+SELECT *FROM VentaFecha
+/*----------------------------------------------------*/
+
+
+/*Ejercicio 9
+*Muestra los nombres de los productos vendidos y su proveedor
+*/
+CREATE VIEW VentasProvedor
+AS
+SELECT PRODUCTO.Nombre Producto , PROVEEDOR.Nombre Proveedor
+FROM (PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto)
+JOIN PROVEEDOR ON PRODUCTO.id_proveedor = PROVEEDOR.id_Proveedor
+GROUP BY PRODUCTO.Nombre , PROVEEDOR.Nombre
+
+SELECT *FROM VentasProvedor
+/*-------------------------------------------------------------*/
+
+/*Ejercicio 10
+*Muestra los clientes con los productos que han comprado
+*/
+CREATE VIEW ClienteProducto
+AS
+SELECT CLIENTE.Nombre Nombre_Cliente , PRODUCTO.Nombre Producto
+FROM (CLIENTE JOIN VENTA ON CLIENTE.id_Cliente = VENTA.id_cliente)
+JOIN PRODUCTO_VENDIDO ON PRODUCTO_VENDIDO.id_venta = VENTA.id_Venta
+JOIN PRODUCTO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto
+
+SELECT *FROM ClienteProducto
+/*---------------------------------------------------------------*/
+
+/*Ejercicio 11
+*Muestra los clientes y de que proveedor son los productos que han 
+*comprado
+*/
+CREATE VIEW ClienteProveedor
+AS
+SELECT CLIENTE.Nombre Nombre_Cliente, PROVEEDOR.Nombre Nombre_Proveedor
+FROM (CLIENTE JOIN VENTA ON CLIENTE.id_Cliente = VENTA.id_cliente)
+JOIN PRODUCTO_VENDIDO ON PRODUCTO_VENDIDO.id_venta = VENTA.id_Venta
+JOIN PRODUCTO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto
+JOIN PROVEEDOR ON PROVEEDOR.id_Proveedor = PRODUCTO.id_proveedor
+
+SELECT *FROM ClienteProveedor
+/*----------------------------*/
