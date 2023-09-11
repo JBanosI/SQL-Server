@@ -1,0 +1,233 @@
+/*Ejercicio 1
+*Crea una variable para almacenar el nombre de un cliente y después úsala 
+*en una consulta para buscar a dicho cliente
+*/
+DECLARE @NOMBRE_CLIENTE varchar(50)
+SET @NOMBRE_CLIENTE = 'Jesus'
+SELECT Nombre
+FROM CLIENTE
+WHERE Nombre = @NOMBRE_CLIENTE
+
+
+/*Ejercicio 2
+*Usa una variable para almacenar un valor y después busca a los clientes 
+*con un crédito mayor a dicho valor 
+*/
+DECLARE @RefCredito numeric(18,4)
+SET @RefCredito = 10000;
+SELECT Nombre , Credito
+FROM CLIENTE
+WHERE @RefCredito < Credito
+
+/*Ejercicio 3
+*Almacena una delegación en una variable y después busca a los clientes de 
+*dicha delegación 
+*/
+DECLARE @DELEGACION varchar(50)
+SET @DELEGACION  = 'Tultepec'
+SELECT Nombre, ApellidoPaterno ,Dir_Municipio 
+FROM CLIENTE
+WHERE Dir_Municipio = @DELEGACION
+
+/*Ejercicio 4
+*Usa variables para almacenar el nombre y apellidos de un cliente y después 
+*úsalas en una consulta para buscarlo 
+*/
+DECLARE @Nombre varchar(50)
+SET @Nombre = 'Jesus'
+DECLARE @ApellidoPaterno varchar(50)
+SET @ApellidoPaterno  = 'Baños'
+SELECT *
+FROM CLIENTE
+WHERE Nombre = @Nombre AND ApellidoPaterno = @ApellidoPaterno
+
+/*Ejercicio 5
+*Usa variables para establecer un rango de crédito y después busca a los 
+*clientes que estén en ese rango
+*/
+DECLARE @LimInfDeuda numeric(18,4)
+DECLARE @LimSupDeuda numeric(18,4)
+SET @LimInfDeuda = 0
+SET	@LimSupDeuda = 54000
+
+SELECT Nombre, Deuda
+FROM CLIENTE
+WHERE Deuda BETWEEN @LimInfDeuda AND @LimSupDeuda
+
+/*Ejercicio 6
+*Usa variables para almacenar nombre y apellidos de un cliente, además la 
+*delegación y realiza una consulta para saber si existen clientes con esos 
+*datos
+*/
+DECLARE @Nombre2 varchar(50) 
+DECLARE @ApellidoPaterno2 varchar(50) 
+DECLARE @ApellidoMaterno varchar(50)
+DECLARE @DEL varchar(50)
+SET @Nombre2 = (SELECT Nombre FROM CLIENTE WHERE Nombre = 'Jesus')
+SET @ApellidoPaterno2 = (SELECT ApellidoPaterno FROM CLIENTE WHERE id_Cliente = 1)
+SET @ApellidoMaterno = (SELECT ApellidoMaterno FROM CLIENTE WHERE id_Cliente  = 1)
+SET @DEL = 'Tultitlan'
+SELECT *
+FROM CLIENTE
+WHERE Nombre = @Nombre2 AND ApellidoMaterno = @ApellidoMaterno AND ApellidoPaterno = @ApellidoPaterno2 AND Dir_Municipio = @DEL
+
+/*Ejercicio 7
+*Almacena en variables el nombre de 3 delegaciones y haz una consulta que 
+*regrese a los clientes de esas 3 delegaciones
+*/
+DECLARE @MUN1 varchar(50)
+DECLARE @MUN2 varchar(50)
+DECLARE @MUN3 varchar(50)
+SET @MUN1 = 'Tultepec'
+SET @MUN2 = 'Tultitlan'
+SET @MUN3 = 'Coacalco'
+SELECT Nombre , Dir_Municipio
+FROM CLIENTE
+WHERE Dir_Municipio = @MUN1 OR Dir_Municipio = @MUN2 OR Dir_Municipio = @MUN3
+
+/*Ejercicio 8
+Almacena en variables el nombre de 3 delegaciones y regresa a los clientes 
+que no viven en esas delegaciones
+*/
+DECLARE @MUN11 varchar(50)
+DECLARE @MUN22 varchar(50)
+DECLARE @MUN33 varchar(50)
+SET @MUN11 = 'Tultepec'
+SET @MUN22 = 'Tultitlan'
+SET @MUN33 = 'Coacalco'
+SELECT Nombre , Dir_Municipio
+FROM CLIENTE
+WHERE Dir_Municipio != @MUN22 AND Dir_Municipio != @MUN11 AND Dir_Municipio != @MUN33
+
+/*Ejercicio 9
+*Almacena en variables el nombre de 3 productos y úsalas para buscar en 
+*que ventas se vendieron y la fecha en que fue
+*/
+DECLARE @PROD1 varchar(50)
+DECLARE @PROD2 varchar(50)
+DECLARE @PROD3 varchar(50)
+SET @PROD1 = 'PS4'
+SET @PROD2 = 'PS5'
+SET @PROD3 = 'BlueRay'
+SELECT Nombre , FechaHora
+FROM (PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto)
+JOIN VENTA ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta
+WHERE (Nombre = @PROD1 OR Nombre = @PROD2 OR Nombre = @PROD3)
+
+/*Ejercicio 10
+*Crea variables para almacenar el nombre de un cliente y un producto y úsala para 
+*mostrar la fecha en que el cliente compro dicho producto (si lo ha comprado) 
+*/
+DECLARE @PROD11 varchar(50)
+DECLARE @Nom varchar(50)
+SET @PROD11 = 'PS5'
+SET @Nom = 'Andrea'
+SELECT CLIENTE.Nombre , PRODUCTO.Nombre , VENTA.FechaHora
+FROM (PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto)
+JOIN VENTA ON PRODUCTO_VENDIDO.id_venta = venta.id_Venta
+JOIN CLIENTE ON CLIENTE.id_Cliente = VENTA.id_cliente
+WHERE PRODUCTO.Nombre = @PROD11 AND CLIENTE.Nombre = @Nom
+
+/*Ejercicio 11
+*Usa variables para almacenar los apellidos de una persona y úsalas para 
+*mostrar a sus posibles familiares 
+*/
+DECLARE @Ap1 varchar(50)
+DECLARE @Ap2 varchar(50)
+SET @Ap1 = (SELECT ApellidoPaterno FROM CLIENTE WHERE id_Cliente = 1)
+SET @Ap2 = (SELECT ApellidoMaterno FROM CLIENTE WHERE id_Cliente = 1)
+SELECT Nombre, ApellidoPaterno , ApellidoMaterno 
+FROM CLIENTE
+WHERE ApellidoPaterno = @Ap1 OR ApellidoMaterno = @Ap2 OR ApellidoMaterno = @Ap1 OR ApellidoPaterno = @Ap2
+
+
+/*Ejercicio 12
+*Usa variables para almacenar 3 Delegaciones y un rango de deuda después 
+*úsalas en una consulta para mostrar a los clientes de esas delegaciones en 
+*ese rango de deuda
+*/
+DECLARE @DEL1 varchar(50)
+DECLARE @DEL2 varchar(50)
+DECLARE @DEL3 varchar(50)
+DECLARE @RanMin numeric(18,4)
+DECLARE @RanMax numeric(18,4)
+SET @DEL1 = 'Tultitlan'
+SET @DEL2 = 'Tultepec'
+SET @DEL3 = 'Coacalco'
+SET @RanMax = 100000
+SET @RanMin = 9000
+SELECT Nombre , Deuda
+FROM CLIENTE
+WHERE (Dir_Municipio = @DEL1 OR Dir_Municipio = @DEL2 OR Dir_Municipio = @DEL3) AND (Deuda BETWEEN @RanMin AND @RanMax)
+
+/*Ejercicio 13
+*Usa variables para guardar el promedio del crédito y después regresa a los 
+*clientes que superen el promedio 
+*/
+DECLARE @PROM numeric(18, 4)
+SET @PROM = (SELECT AVG(Credito) FROM CLIENTE)
+SELECT Nombre , Credito
+FROM CLIENTE WHERE Credito >= @PROM
+
+/*Ejercicio 14
+*Usa variables para almacenar el máximo crédito otorgado y muestra a todos 
+*los clientes con ese crédito
+*/
+DECLARE @MAX numeric(18,4)
+SET @MAX = (SELECT MAX(Credito) FROM CLIENTE)
+SELECT Nombre , Credito
+FROM CLIENTE 
+WHERE Credito >= @MAX
+
+/*Ejercicio 15 
+*Almacena en una variable el identificador del cliente Edgar Catalán Salgado 
+*y después úsalo para ver las compras que ha realizado
+*/
+DECLARE @id numeric(18,4)
+SET @id = (SELECT id_Cliente FROM CLIENTE WHERE id_Cliente = 11)
+SELECT CLIENTE.id_Cliente Id_Cliente, CLIENTE.ApellidoPaterno Apellido_Paterno , Cliente.Nombre Nombre_Cliente, VENTA.id_Venta Id_Venta, PRODUCTO.Nombre Nombre_Producto
+FROM (PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto)
+JOIN VENTA ON PRODUCTO_VENDIDO.id_venta = VENTA.id_Venta
+JOIN CLIENTE ON CLIENTE.id_Cliente = VENTA.id_cliente
+WHERE Cliente.id_Cliente = @id
+
+/*Ejercicio 16
+*Almacena en variables los apellidos del cliente con el Identificador 3 y 
+*después muestra a sus posibles familiares 
+*/
+DECLARE @Apell_Pat varchar(50)
+DECLARE @Apell_Mat varchar(50)
+SET @Apell_Pat = (SELECT ApellidoPaterno FROM CLIENTE WHERE id_Cliente = 3)
+SET @Apell_Mat = (SELECT ApellidoMaterno FROM CLIENTE WHERE id_Cliente = 3)
+SELECT Nombre, ApellidoPaterno , ApellidoMaterno
+FROM CLIENTE
+WHERE ApellidoPaterno = @Apell_Pat OR ApellidoMaterno = @Apell_Mat OR ApellidoPaterno = @Apell_Mat OR ApellidoMaterno = @Apell_Pat
+
+/*Ejercicio 17
+*Almacena en una variable del producto mas caro vendido y después 
+*muestra los datos del cliente que lo compro
+*/
+DECLARE @Prod numeric(18,4)
+SET @Prod = (SELECT MAX(PrecioVenta) FROM PRODUCTO_VENDIDO)
+SELECT Cliente.* , PRODUCTO_VENDIDO.PrecioVenta
+FROM (PRODUCTO_VENDIDO JOIN VENTA ON PRODUCTO_VENDIDO.id_venta =VENTA.id_Venta)
+JOIN CLIENTE ON CLIENTE.id_Cliente = VENTA.id_cliente
+WHERE PRODUCTO_VENDIDO.PrecioVenta = @Prod 
+
+/*Ejercicio 18
+*Almacena en variable el crédito mas pequeño, el promedio de crédito global 
+*y utilízalo para crear la siguiente tabla
+*/
+CREATE VIEW PromedioMun
+AS
+SELECT Dir_Municipio , AVG(Credito) PromedioMunicipio
+FROM CLIENTE
+GROUP BY Dir_Municipio
+
+DECLARE @cred_min numeric(18,4)
+DECLARE @prom_glob numeric(18,4)
+SET @cred_min = (SELECT MIN(Credito) FROM CLIENTE)
+SET @prom_glob = (SELECT AVG(Credito) FROM CLIENTE)
+SELECT Dir_Municipio , PromedioMunicipio , (PromedioMunicipio-@prom_glob) DiferenciaGlobal
+FROM PromedioMun
+ORDER BY PromedioMunicipio ASC
