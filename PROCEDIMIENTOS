@@ -1,0 +1,408 @@
+
+/*Ejercicio 1 Procedimientos
+*Crea una variable para almacenar el nombre de un cliente y después úsala 
+*en una consulta para buscar a dicho cliente
+*/
+CREATE PROCEDURE Nom_Cli_1
+@Nombre varchar(50) 
+AS
+BEGIN
+SELECT Nombre,ApellidoPaterno, ApellidoMaterno
+FROM CLIENTE
+WHERE Nombre = @Nombre
+END
+
+EXEC dbo.Nom_Cli_1 'Jesus'
+
+
+/*Ejercicio 2 Procedimientos
+*Usa una variable para almacenar un valor y después busca a los clientes 
+*con un crédito mayor a dicho valor 
+*/
+CREATE PROCEDURE Cred_2
+@RefCredito numeric(18,2)
+AS
+SELECT Nombre , Credito
+FROM CLIENTE
+WHERE @RefCredito < Credito
+
+EXEC dbo.Cred_2 1500
+
+
+/*Ejercicio 3 Procedimientos
+*Almacena una delegación en una variable y después busca a los clientes de 
+*dicha delegación 
+*/
+CREATE PROCEDURE DEL_3
+@DELEGACION varchar(50)
+AS
+SELECT Nombre, ApellidoPaterno ,Dir_Municipio 
+FROM CLIENTE
+WHERE Dir_Municipio = @DELEGACION
+
+EXEC dbo.DEL_3 'Tultitlan'
+
+
+/*Ejercicio 4 Procedimientos
+*Usa variables para almacenar el nombre y apellidos de un cliente y después 
+*úsalas en una consulta para buscarlo 
+*/
+CREATE PROCEDURE Nom_Ap_4
+@Nombre varchar(50),
+@ApellidoPaterno varchar(50)
+AS
+SELECT *
+FROM CLIENTE
+WHERE Nombre = @Nombre AND ApellidoPaterno = @ApellidoPaterno
+
+EXEC Nom_Ap_4 'Alberto' , 'Baños'		
+
+
+/*Ejercicio 5 Procedimientos
+*Usa variables para establecer un rango de crédito y después busca a los 
+*clientes que estén en ese rango
+*/
+CREATE PROCEDURE Rank_Cred_5
+@LimInfDeuda numeric(18,4),
+@LimSupDeuda numeric(18,4)
+AS
+SELECT Nombre, ApellidoPaterno , Deuda
+FROM CLIENTE
+WHERE Deuda BETWEEN @LimInfDeuda AND @LimSupDeuda
+
+EXEC dbo.Rank_Cred_5 550 , 15000
+
+
+/*Ejercicio 6 Procedimientos
+*Usa variables para almacenar nombre y apellidos de un cliente, además la 
+*delegación y realiza una consulta para saber si existen clientes con esos 
+*datos
+*/
+CREATE PROCEDURE DATA_CLIETE_6
+@Nombre varchar(50),
+@ApellidoPaterno varchar(50),
+@ApellidoMaterno varchar(50),
+@Delegacion varchar(50)
+AS
+SELECT *
+FROM CLIENTE
+WHERE Nombre = @Nombre AND ApellidoMaterno = @ApellidoMaterno AND ApellidoPaterno = @ApellidoPaterno AND Dir_Municipio = @Delegacion
+
+EXEC dbo.DATA_CLIETE_6 'Jesus' , 'Baños' , 'Islas' , 'Tultitlan'
+
+
+/*Ejercicio 7 Procedimientos
+*Almacena en variables el nombre de 3 delegaciones y haz una consulta que 
+*regrese a los clientes de esas 3 delegaciones
+*/
+CREATE PROCEDURE DELS_7
+@MUN1 varchar(50),
+@MUN2 varchar(50),
+@MUN3 varchar(50)
+AS
+SELECT Nombre, ApellidoPaterno , Dir_Municipio
+FROM CLIENTE
+WHERE Dir_Municipio = @MUN1 OR Dir_Municipio = @MUN2 OR Dir_Municipio = @MUN3
+
+EXEC dbo.DELS_7 'Tultitlan' , 'Tultepec' , 'Coacalco'
+
+
+/*Ejercicio 8 Procedimientos
+Almacena en variables el nombre de 3 delegaciones y regresa a los clientes 
+que no viven en esas delegaciones
+*/
+CREATE PROCEDURE No_DELS_8
+@MUN11 varchar(50),
+@MUN22 varchar(50),
+@MUN33 varchar(50)
+AS
+SELECT Nombre , ApellidoPaterno , Dir_Municipio
+FROM CLIENTE
+WHERE Dir_Municipio != @MUN22 AND Dir_Municipio != @MUN11 AND Dir_Municipio != @MUN33
+
+EXEC dbo.No_DELS_8 'Tultitlan','Tultepec','Coacalco'
+
+/*Ejercicio 9 Procedimientos
+*Almacena en variables el nombre de 3 productos y úsalas para buscar en 
+*que ventas se vendieron y la fecha en que fue
+*/
+CREATE PROCEDURE Vent_9
+@PROD1 varchar(50),
+@PROD2 varchar(50),
+@PROD3 varchar(50)
+AS
+SELECT Nombre , FechaHora
+FROM (PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto)
+JOIN VENTA ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta
+WHERE (Nombre = @PROD1 OR Nombre = @PROD2 OR Nombre = @PROD3)
+EXEC dbo.Vent_9 'PS4' , 'PS5' , 'BlueRay'
+
+
+/*Ejercicio 10 Procedimientos
+*Crea variables para almacenar el nombre de un cliente y un producto y úsala para 
+*mostrar la fecha en que el cliente compro dicho producto (si lo ha comprado) 
+*/
+CREATE PROCEDURE Clie_DATA_10
+@PROD11 varchar(50),
+@Nom varchar(50)
+AS
+SELECT CLIENTE.Nombre , PRODUCTO.Nombre , VENTA.FechaHora
+FROM (PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto)
+JOIN VENTA ON PRODUCTO_VENDIDO.id_venta = venta.id_Venta
+JOIN CLIENTE ON CLIENTE.id_Cliente = VENTA.id_cliente
+WHERE PRODUCTO.Nombre = @PROD11 AND CLIENTE.Nombre = @Nom
+
+EXEC dbo.Clie_DATA_10 'PS5','Andrea'
+
+/*Ejercicio 11 Procedimientos
+*Usa variables para almacenar los apellidos de una persona y úsalas para 
+*mostrar a sus posibles familiares 
+*/
+CREATE PROCEDURE Familia_11
+@Ap1 varchar(50),
+@Ap2 varchar(50)
+AS
+SELECT Nombre, ApellidoPaterno , ApellidoMaterno 
+FROM CLIENTE
+WHERE ApellidoPaterno = @Ap1 OR ApellidoMaterno = @Ap2 OR ApellidoMaterno = @Ap1 OR ApellidoPaterno = @Ap2
+
+EXEC dbo.Familia_11 'Baños' , 'Islas'
+
+
+/*Ejercicio 12 Procedimientos
+*Usa variables para almacenar 3 Delegaciones y un rango de deuda después 
+*úsalas en una consulta para mostrar a los clientes de esas delegaciones en 
+*ese rango de deuda
+*/
+CREATE PROCEDURE Deuda_Municipio_12
+@DEL1 varchar(50),
+@DEL2 varchar(50),
+@DEL3 varchar(50),
+@RanMin numeric(18,4),
+@RanMax numeric(18,4)
+AS
+SELECT Nombre , Deuda
+FROM CLIENTE
+WHERE (Dir_Municipio = @DEL1 OR Dir_Municipio = @DEL2 OR Dir_Municipio = @DEL3) AND (Deuda BETWEEN @RanMin AND @RanMax)
+
+EXEC dbo.Deuda_Municipio_12 'Tultitlan' , 'Tultepec' , 'Coacalco' , 25000 , 40000
+
+/*Ejercicio 13 Procedimientos
+*Usa variables para guardar el promedio del crédito y después regresa a los 
+*clientes que superen el promedio 
+*/
+ALTER PROCEDURE Prom_13
+@PROM numeric(18, 4) 
+AS
+SELECT Nombre , Credito
+FROM CLIENTE WHERE Credito >= @PROM
+
+DECLARE @PROM2 NUMERIC(18,4)
+set @PROM2 = (SELECT AVG(Credito) FROM CLIENTE)
+EXEC dbo.Prom_13 @PROM2
+
+
+/*Ejercicio 14 Procedimientos
+*Usa variables para almacenar el máximo crédito otorgado y muestra a todos 
+*los clientes con ese crédito
+*/
+CREATE PROCEDURE MaX_14
+@MAX numeric(18,4)
+AS
+SELECT Nombre , Credito
+FROM CLIENTE 
+WHERE Credito >= @MAX
+
+DECLARE @MAX2 numeric(18,4)
+SET @MAX2 = (SELECT MAX(Credito) FROM CLIENTE)
+EXEC dbo.MaX_14 @MAX2
+
+
+/*Ejercicio 15 Procedimientos
+*Almacena en una variable el identificador del cliente Edgar Catalán Salgado 
+*y después úsalo para ver las compras que ha realizado
+*/
+CREATE PROCEDURE Busca_15
+@id numeric(18,4)
+AS
+SELECT CLIENTE.id_Cliente Id_Cliente, CLIENTE.ApellidoPaterno Apellido_Paterno , Cliente.Nombre Nombre_Cliente, VENTA.id_Venta Id_Venta, PRODUCTO.Nombre Nombre_Producto
+FROM (PRODUCTO JOIN PRODUCTO_VENDIDO ON PRODUCTO.id_Producto = PRODUCTO_VENDIDO.id_producto)
+JOIN VENTA ON PRODUCTO_VENDIDO.id_venta = VENTA.id_Venta
+JOIN CLIENTE ON CLIENTE.id_Cliente = VENTA.id_cliente
+WHERE Cliente.id_Cliente = @id
+
+EXEC dbo.Busca_15 3
+
+
+/*Ejercicio 16 Procedimiento
+*Almacena en variables los apellidos del cliente con el Identificador 3 y 
+*después muestra a sus posibles familiares 
+*/
+CREATE PROCEDURE BUSCA2_16
+@Apell_Pat varchar(50),
+@Apell_Mat varchar(50),
+@ID int
+AS
+SELECT Nombre, ApellidoPaterno , ApellidoMaterno
+FROM CLIENTE
+WHERE ApellidoPaterno = @Apell_Pat OR ApellidoMaterno = @Apell_Mat OR ApellidoPaterno = @Apell_Mat OR ApellidoMaterno = @Apell_Pat
+
+EXEC dbo.BUSCA2_16 'Baños' , 'Canales' , 3
+
+
+/*Ejercicio 17 Procedimientos
+*Almacena en una variable del producto mas caro vendido y después 
+*muestra los datos del cliente que lo compro
+*/
+CREATE PROCEDURE Caro_17
+@Prod numeric(18,4)
+AS
+SELECT Cliente.* , PRODUCTO_VENDIDO.PrecioVenta
+FROM (PRODUCTO_VENDIDO JOIN VENTA ON PRODUCTO_VENDIDO.id_venta =VENTA.id_Venta)
+JOIN CLIENTE ON CLIENTE.id_Cliente = VENTA.id_cliente
+WHERE PRODUCTO_VENDIDO.PrecioVenta = @Prod 
+
+DECLARE @PMAX numeric(18,4)
+SET @PMAX = (SELECT MAX(PrecioVenta) FROM PRODUCTO_VENDIDO)
+EXEC dbo.Caro_17 @PMAX
+
+
+/*Ejercicio 18 Procedimientos
+*Almacena en variable el crédito mas pequeño, el promedio de crédito global 
+*y utilízalo para crear la siguiente tabla
+*/
+CREATE PROCEDURE Tabla_18
+@prom_glob numeric(18,4)
+AS
+DECLARE @cred_min numeric(18,4)
+SET @cred_min = (SELECT MIN(Credito) FROM CLIENTE)
+SELECT Dir_Municipio , PromedioMunicipio , (PromedioMunicipio-@prom_glob) DiferenciaGlobal
+FROM PromedioMun
+
+DECLARE @PROM_GLOBA numeric(18,4)
+SET @PROM_GLOBA = (SELECT AVG(Credito) FROM CLIENTE)
+EXEC Tabla_18 @PROM_GLOBA
+
+
+/*Ejercicio 19 Procedimientos
+*La tienda requiere que para una delegación dada en particular se calcule el 
+*promedio de de deuda , si este promedio es mayor a un número indicado 
+*entonces el credito se incrementará en un 5% para todos los clientes de esa 
+*delegación, si no permanecerá igual ( por ejemplo, si en un determinado 
+*momento se indica que para la delegación iztacalco el promedio debe de ser 
+*15000 o mas, y se cumple entonces se incremente
+*/
+CREATE PROCEDURE Deuda_Municipio_19
+@Municipio varchar(50)
+AS
+DECLARE @Deuda numeric(18,4)
+DECLARE @Cred numeric(18,4)
+DECLARE @AumentoCredito varchar(50)
+SET @Deuda = (SELECT AVG(Deuda) FROM CLIENTE WHERE Dir_Municipio = @Municipio)
+
+IF @Deuda<5000
+	BEGIN
+		SET @AumentoCredito = '5%'
+		SET @Cred = 0.05
+	END
+ELSE
+	BEGIN
+		IF @Deuda>=5000 AND @Deuda<15000
+			BEGIN
+				SET @AumentoCredito = '10%'
+				SET @Cred = 0.1
+			END
+		ELSE
+			BEGIN
+				IF @Deuda>15000
+					BEGIN
+						SET @AumentoCredito = '15%'
+						SET @Cred = 0.15
+					END
+			END
+	END
+
+SELECT Nombre,
+		Dir_Municipio,
+		Credito CreditoSinAumento,
+		(Credito*@Cred)+Credito CreditoConAumento,
+		@AumentoCredito AumentoCredito
+FROM CLIENTE
+WHERE Dir_Municipio = @Municipio
+
+EXEC dbo.Deuda_Municipio_19 'Coacalco'
+
+
+/*Ejercicio 20 Procedimientos
+*Un programa especial de recompensas dice que si un cliente en un 
+*determinado periodo de tiempo sus compras superan un monto indicado, 
+*entonces se gana un descuento del 20% de su deuda, el cual se ver 
+*reflejado inmediatamente. 
+*/
+CREATE PROCEDURE Recompensas_20
+@MontoCompra numeric(18,4),
+@Cliente int,
+@FechaIni date,
+@FechaFin date
+AS
+DECLARE @CompraCliente numeric(18,4)
+DECLARE @Descuento numeric(18,4)
+SET @CompraCliente =
+(SELECT SUM(PRODUCTO_VENDIDO.PrecioVenta) 
+FROM (CLIENTE JOIN VENTA ON CLIENTE.id_Cliente = VENTA.id_cliente)
+	JOIN PRODUCTO_VENDIDO ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta WHERE CLIENTE.id_Cliente = @Cliente
+	AND VENTA.FechaHora >= @FechaIni AND VENTA.FechaHora<=@FechaFin)
+
+IF @CompraCliente >= @MontoCompra
+	BEGIN
+		SET @Descuento = (SELECT Deuda*0.2 FROM CLIENTE WHERE id_Cliente = @Cliente)
+	END
+ELSE
+BEGIN
+	SET @Descuento = 0
+END
+
+	SELECT CLIENTE.Nombre , CLIENTE.Deuda , VENTA.FechaHora , PRODUCTO_VENDIDO.PrecioVenta PrecioCompra , @Descuento DescuentoDeuda
+	FROM (CLIENTE JOIN VENTA ON CLIENTE.id_Cliente = VENTA.id_cliente)
+	JOIN PRODUCTO_VENDIDO ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta
+	WHERE CLIENTE.id_Cliente = @Cliente
+
+EXEC dbo.Recompensas_20 1500 , 3 , '2023/02/1' , '2023/06/1'
+
+
+/*Ejercicio 21 Procedimientos
+*Se quiere que a partir del nombre y apellidos de un cliente, se verifique si ha 
+*comprado en un periodo de tiempo, si no lo ha hecho y no tiene deudas, 
+*entonces se eliminara del sistema 
+*/
+CREATE PROCEDURE Elim_21
+@Nombre varchar(50),
+@ApellidoPat varchar(50),
+@Fecha1 date,
+@Fecha2 date
+AS
+DECLARE @ComprasCliente int
+DECLARE @Deuda2 numeric(18,4)
+DECLARE @id int
+SET @ComprasCliente = (SELECT COUNT(VENTA.FechaHora) FROM (VENTA JOIN CLIENTE ON VENTA.id_cliente = CLIENTE.id_Cliente)
+						WHERE (( CLIENTE.Nombre=@Nombre AND CLIENTE.ApellidoPaterno=@ApellidoPat)
+						AND
+						(VENTA.FechaHora >= @Fecha1 AND VENTA.FechaHora <= @Fecha2)))
+SET @Deuda2 = (SELECT Deuda FROM CLIENTE WHERE (Nombre = @Nombre AND ApellidoPaterno = @ApellidoPat))
+SET @id = (SELECT id_Cliente FROM CLIENTE WHERE (Nombre = @Nombre AND ApellidoPaterno = @ApellidoPat))
+
+
+IF @ComprasCliente=0 AND @Deuda2=0
+	BEGIN
+		DELETE FROM CLIENTE WHERE id_Cliente = @id
+	END
+
+SELECT CLIENTE.Nombre,
+COUNT(VENTA.FechaHora) Ventas, 
+CLIENTE.Deuda 
+FROM (VENTA JOIN CLIENTE ON VENTA.id_cliente = CLIENTE.id_Cliente)
+WHERE (( CLIENTE.Nombre=@Nombre AND CLIENTE.ApellidoPaterno=@ApellidoPat)
+AND (FechaHora >= @Fecha1 AND FechaHora <= @Fecha2))
+GROUP BY CLIENTE.Nombre, CLIENTE.Deuda
+
+EXEC dbo.Elim_21 'Alberto' , 'Baños' , '2023/02/1' , '2023/06/1'
