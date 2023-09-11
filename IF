@@ -1,0 +1,121 @@
+--B.6.3 Ejercicios del tema IF
+
+/*Ejercicio 1
+*La tienda requiere que para una delegación dada en particular se calcule el 
+*promedio de de deuda , si este promedio es mayor a un número indicado 
+*entonces el credito se incrementará en un 5% para todos los clientes de esa 
+*delegación, si no permanecerá igual ( por ejemplo, si en un determinado 
+*momento se indica que para la delegación iztacalco el promedio debe de ser 
+*15000 o mas, y se cumple entonces se incremente
+*/
+DECLARE @Municipio varchar(50)
+DECLARE @Deuda numeric(18,4)
+DECLARE @AumentoCredito varchar(50)
+DECLARE @Cred numeric(18,4)
+SET @Municipio = 'Tultitlan'
+SET @Deuda = (SELECT AVG(Deuda) FROM CLIENTE WHERE Dir_Municipio = @Municipio)
+
+IF @Deuda<5000
+	BEGIN
+		SET @AumentoCredito = '5%'
+		SET @Cred = 0.05
+	END
+ELSE
+	BEGIN
+		IF @Deuda>=5000 AND @Deuda<15000
+			BEGIN
+				SET @AumentoCredito = '10%'
+				SET @Cred = 0.1
+			END
+		ELSE
+			BEGIN
+				IF @Deuda>15000
+					BEGIN
+						SET @AumentoCredito = '15%'
+						SET @Cred = 0.15
+					END
+			END
+	END
+
+SELECT  Nombre,
+		Dir_Municipio,
+		Credito CreditoSinAumento,
+		(Credito*@Cred)+Credito CreditoConAumento,
+		@AumentoCredito AumentoCredito
+FROM CLIENTE
+WHERE Dir_Municipio = @Municipio
+
+
+/*Ejercicio 2
+*Un programa especial de recompensas dice que si un cliente en un 
+*determinado periodo de tiempo sus compras superan un monto indicado, 
+*entonces se gana un descuento del 20% de su deuda, el cual se ver 
+*reflejado inmediatamente. 
+*/
+DECLARE @MontoCompra numeric(18,4)
+DECLARE @CompraCliente numeric(18,4)
+DECLARE @Cliente int
+DECLARE @Descuento numeric(18,4)
+DECLARE @FechaIni date
+DECLARE @FechaFin date
+SET @FechaIni = '2023/02/1'
+SET @FechaFin = '2023/06/1'
+SET @MontoCompra = 1500
+SET @Cliente = 3
+SET @CompraCliente =
+(SELECT SUM(PRODUCTO_VENDIDO.PrecioVenta) 
+FROM (CLIENTE JOIN VENTA ON CLIENTE.id_Cliente = VENTA.id_cliente)
+	JOIN PRODUCTO_VENDIDO ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta WHERE CLIENTE.id_Cliente = @Cliente
+	AND VENTA.FechaHora >= @FechaIni AND VENTA.FechaHora<=@FechaFin)
+
+IF @CompraCliente >= @MontoCompra
+	BEGIN
+		SET @Descuento = (SELECT Deuda*0.2 FROM CLIENTE WHERE id_Cliente = @Cliente)
+	END
+ELSE
+BEGIN
+	SET @Descuento = 0
+END
+
+	SELECT CLIENTE.Nombre , CLIENTE.Deuda , VENTA.FechaHora , PRODUCTO_VENDIDO.PrecioVenta PrecioCompra , @Descuento DescuentoDeuda
+	FROM (CLIENTE JOIN VENTA ON CLIENTE.id_Cliente = VENTA.id_cliente)
+	JOIN PRODUCTO_VENDIDO ON VENTA.id_Venta = PRODUCTO_VENDIDO.id_venta
+	WHERE CLIENTE.id_Cliente = @Cliente
+
+
+/*Ejercicio 3
+*Se quiere que a partir del nombre y apellidos de un cliente, se verifique si ha 
+*comprado en un periodo de tiempo, si no lo ha hecho y no tiene deudas, 
+*entonces se eliminara del sistema 
+*/
+DECLARE @Fecha1 date
+DECLARE @Fecha2 date
+DECLARE @Nombre varchar(50)
+DECLARE @ComprasCliente int
+DECLARE @ApellidoPat varchar(50)
+DECLARE @Deuda2 numeric(18,4)
+DECLARE @id int
+SET @Fecha1 = '2023/02/1'
+SET @Fecha2 = '2023/06/1'
+SET @Nombre = 'Alberto'
+SET @ApellidoPat = 'Baños'
+SET @ComprasCliente = (SELECT COUNT(VENTA.FechaHora) FROM (VENTA JOIN CLIENTE ON VENTA.id_cliente = CLIENTE.id_Cliente)
+						WHERE (( CLIENTE.Nombre=@Nombre AND CLIENTE.ApellidoPaterno=@ApellidoPat)
+						AND
+						(VENTA.FechaHora >= @Fecha1 AND VENTA.FechaHora <= @Fecha2)))
+SET @Deuda2 = (SELECT Deuda FROM CLIENTE WHERE (Nombre = @Nombre AND ApellidoPaterno = @ApellidoPat))
+SET @id = (SELECT id_Cliente FROM CLIENTE WHERE (Nombre = @Nombre AND ApellidoPaterno = @ApellidoPat))
+
+
+IF @ComprasCliente=0 AND @Deuda2=0
+	BEGIN
+		DELETE FROM CLIENTE WHERE id_Cliente = @id
+	END
+
+SELECT CLIENTE.Nombre,
+COUNT(VENTA.FechaHora) Ventas, 
+CLIENTE.Deuda 
+FROM (VENTA JOIN CLIENTE ON VENTA.id_cliente = CLIENTE.id_Cliente)
+WHERE (( CLIENTE.Nombre=@Nombre AND CLIENTE.ApellidoPaterno=@ApellidoPat)
+AND (FechaHora >= @Fecha1 AND FechaHora <= @Fecha2))
+GROUP BY CLIENTE.Nombre, CLIENTE.Deuda
