@@ -1,0 +1,116 @@
+--B.6.2 Ejercicios de condicional CASE
+/*Ejercicio 1
+*Muestra a los clientes con su delegación, solo que por razones de espacio 
+*reemplaza los siguientes: 
+*Gustavo A. Madero por GAM 
+*Benito Juarez por B.Juarez 
+*Alvaro Obregon por A.Obregon 
+*/
+SELECT Nombre,
+		Dir_Municipio,
+		CASE Dir_Municipio
+			WHEN 'Tultitlan' THEN UPPER(LEFT(Dir_Municipio,4))
+			WHEN 'Tultepec' THEN UPPER(LEFT(Dir_Municipio,4))
+			WHEN 'Coacalco' THEN UPPER(LEFT(Dir_Municipio,4))
+			WHEN 'Gutierrez Zamora' THEN UPPER(LEFT(Dir_Municipio,4))
+			WHEN 'Tampico' THEN UPPER(LEFT(Dir_Municipio,4))
+			ELSE 'N/A'
+		END Abreviatura
+FROM CLIENTE
+
+/*Ejercicio 2
+*Muestra a los clientes con su deuda y muestra una columna adicional que 
+*indique el tipo de deuda de acuerdo a la sig. tabla: 
+*Deuda<0 'Deuda no Valida' 
+*Deuda>=0 y menor a 5000 'Deuda Baja' 
+*Deuda>=5000 y menor a 15000 'Deuda Media' 
+*Deuda>=15000 'Deuda Grande' 
+*/
+SELECT Nombre,
+		Deuda,
+		CASE
+			WHEN Deuda<0 THEN 'Deuda no valida'
+			WHEN Deuda>=0 AND Deuda <= 5000 THEN 'Deuda Baja'
+			WHEN Deuda>=5000 AND Deuda<15000 THEN 'Deuda Media'
+			WHEN Deuda>=15000 THEN 'Deuda Alta'
+			ELSE 'NA'
+		END Magnitud_Deuda
+FROM CLIENTE
+
+/*Ejercicio 3
+*Muestra a los clientes con su deuda pero de acuerdo a la deuda, aplica la 
+*tasa de interes que se muestra a continuación, es necesario mostrar la 
+*deuda, la tasa de interes y la deuda incrementada con el interes: 
+*Deuda>=0 y menor a 5000 15% 
+*Deuda entre 5000 y 10000 10% 
+*Deuda mayor a 10000 5% 
+*/
+SELECT Nombre,
+		Deuda,
+		CASE
+			WHEN Deuda>=0 AND Deuda<5000 THEN '15%'
+			WHEN Deuda>=5000 AND Deuda<=10000 THEN '10%'
+			WHEN Deuda>1000 THEN '5%'
+		END Tasa,
+		CASE
+			WHEN Deuda>=0 AND Deuda<5000 THEN Deuda+(Deuda*0.15)
+			WHEN Deuda>=5000 AND Deuda<=10000 THEN Deuda+(Deuda*0.1)
+			WHEN Deuda>1000 THEN Deuda+(Deuda*0.05)
+		END DeudaAcumulada
+FROM CLIENTE
+
+/*Ejercicio 4
+*Obtén la antigüedad en años de un cliente y de acuerdo a ella aplica el 
+*siguiente bono: 
+*0-5 años 'sin bono' 
+*5-10 años 'bono medio' 
+*10 o mas 'bono especial'
+*/
+CREATE VIEW Antiguedad
+AS
+SELECT Nombre, 
+		FechaAlta,
+		DATEDIFF(YY,FechaAlta,GETDATE()) AñosAntiguedad
+FROM CLIENTE
+
+SELECT Nombre,
+		FechaAlta,
+		AñosAntiguedad,
+		CASE
+			WHEN AñosAntiguedad>=0 AND AñosAntiguedad<=5 THEN 'Sin bono'
+			WHEN AñosAntiguedad>5 AND AñosAntiguedad<=10 THEN 'Bono Medio'
+			WHEN AñosAntiguedad>10 THEN 'Bono especial'
+			ELSE 'NA'
+		END Bono
+FROM Antiguedad
+
+/*Ejercicio 5
+*La tienda a decidido instalar un sistema de descuentos a la deuda 
+*basándose en la delegación y la deuda adquirida de la sig. forma: 
+*Iztacalco Iztapalapa B. Juarez 
+*Rango deuda Descuento Rango deuda Descuento Rango deuda Descuento 
+*0-5000 5% 0-5000 11% 0-5000 3% 
+*5000-10000 10% 5000-10000 13% 5000-10000 7% 
+* 10000 o mas 15% 10000 o mas 14% 10000 o mas 9% 
+*/
+SELECT Nombre,
+		Dir_Municipio,
+		Deuda,
+		CASE
+			WHEN Dir_Municipio='Tultitlan' AND (Deuda>=0 AND Deuda<=5000) THEN '5%'
+			WHEN Dir_Municipio='Tultitlan' AND (Deuda>5000 AND Deuda<=10000) THEN '10%'
+			WHEN Dir_Municipio='Tultitlan' AND (Deuda>10000) THEN '15%'
+			WHEN Dir_Municipio='Tultepec' AND (Deuda>=0 AND Deuda<=5000) THEN '5%'
+			WHEN Dir_Municipio='Tultepec' AND (Deuda>5000 AND Deuda<=10000) THEN '10%'
+			WHEN Dir_Municipio='Tultepec' AND (Deuda>10000) THEN '15%'
+			WHEN Dir_Municipio='Coacalco' AND (Deuda>=0 AND Deuda<=5000) THEN '5%'
+			WHEN Dir_Municipio='Coacalco' AND (Deuda>5000 AND Deuda<=10000) THEN '10%'
+			WHEN Dir_Municipio='Coacalco' AND (Deuda>10000) THEN '15%'
+			WHEN Dir_Municipio='Gutierrez Zamora' AND (Deuda>=0 AND Deuda<=5000) THEN '5%'
+			WHEN Dir_Municipio='Gutierrez Zamora' AND (Deuda>5000 AND Deuda<=10000) THEN '10%'
+			WHEN Dir_Municipio='Gutierrez Zamora' AND (Deuda>10000) THEN '15%'
+			WHEN Dir_Municipio='Tampico' AND (Deuda>=0 AND Deuda<=5000) THEN '5%'
+			WHEN Dir_Municipio='Tampico' AND (Deuda>5000 AND Deuda<=10000) THEN '10%'
+			WHEN Dir_Municipio='Tampico' AND (Deuda>10000) THEN '15%'
+		END Descuento
+FROM CLIENTE
